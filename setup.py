@@ -33,6 +33,6 @@ setup(
     py_modules=['astdispatch'],
     classifiers=[],
     install_requires=['singledispatch'],
-    tests_require=['pytest'],
+    tests_require=['astunparse', 'pytest'],
     test_suite='...',
 )
