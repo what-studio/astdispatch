@@ -3,7 +3,6 @@ import ast
 from textwrap import dedent
 
 from astunparse import unparse as astunparse
-import inflection
 
 from astdispatch import astdispatch
 
@@ -15,27 +14,33 @@ def transform(func, src_code, dest_code):
 
 
 def test_transform():
+    def mangle_id(id_):
+        import base64
+        import re
+        return re.sub(r'[+/=]', '', base64.b64encode(id_))[:6].lower()
     @astdispatch(transform=True)
-    def fix_names(node):
+    def mangle(node):
         return node
-    @fix_names.register(ast.Name)
-    def fix_name(name):
-        return ast.Name(id=inflection.underscore(name.id), ctx=name.ctx)
-    @fix_names.register(ast.FunctionDef)
-    def fix_func_def(func_def):
-        return ast.FunctionDef(
-            name=inflection.underscore(func_def.name),
-            args=func_def.args,
-            body=map(fix_names, func_def.body),
-            decorator_list=map(fix_names, func_def.decorator_list))
-    assert transform(fix_names, '''
-    helloWorld = 'Hello, world!'
-    def getFirst(manyCharacters):
-        return manyCharacters[0]
-    h = getFirst(helloWorld)
+    @mangle.register(ast.Name)
+    def mangle_name(name):
+        return ast.Name(id=mangle_id(name.id), ctx=name.ctx)
+    @mangle.register(ast.FunctionDef)
+    def mangle_fdef(fdef):
+        return ast.FunctionDef(name=mangle_id(fdef.name),
+                               args=fdef.args, body=fdef.body,
+                               decorator_list=fdef.decorator_list)
+    assert transform(mangle, '''
+    a = 123
+    b = 456
+    c = a + b
+    def pow(x, y):
+        return x ** y
+    d = pow(a, b)
     ''', '''
-    hello_world = 'Hello, world!'
-    def get_first(many_characters):
-        return many_characters[0]
-    h = get_first(hello_world)
+    yq = 123
+    yg = 456
+    yw = (yq + yg)
+    def cg93(ea, eq):
+        return (ea ** eq)
+    za = cg93(yq, yg)
     ''')
