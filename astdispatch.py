@@ -13,6 +13,7 @@ from singledispatch import singledispatch
 
 
 __all__ = ['astdispatch']
+__version__ = '0.0.1-dev'
 
 
 class NodeVisitor(ast.NodeVisitor):
