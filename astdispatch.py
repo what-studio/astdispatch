@@ -12,11 +12,12 @@ import ast
 from singledispatch import singledispatch
 
 
-__all__ = ['astdispatch']
 __version__ = '0.0.1-dev'
+__all__ = ['astdispatch']
 
 
 class NodeVisitor(ast.NodeVisitor):
+    """AST node visitor which wraps a single-dispatch function."""
 
     def __init__(self, dispatch, *args, **kwargs):
         self.dispatch = dispatch
@@ -29,6 +30,7 @@ class NodeVisitor(ast.NodeVisitor):
 
 
 class NodeTransformer(ast.NodeTransformer, NodeVisitor):
+    """AST node transformer which wraps a single-dispatch function."""
 
     pass
 
@@ -51,7 +53,11 @@ class ASTDispatch(object):
 
 
 def astdispatch(func=None, transform=False):
-    """AST node visiting function decorator."""
+    """AST node visiting function decorator.
+
+    :param transform: use node transformer or not.  (default: ``False``)
+
+    """
     def decorator(func, transform=transform):
         visitor_class = NodeTransformer if transform else NodeVisitor
         return ASTDispatch(func, visitor_class=visitor_class)
