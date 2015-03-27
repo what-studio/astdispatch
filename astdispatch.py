@@ -25,8 +25,9 @@ class NodeVisitor(ast.NodeVisitor):
         self.kwargs = kwargs
 
     def visit(self, node):
-        self.dispatch(node, *self.args, **self.kwargs)
+        rv = self.dispatch(node, *self.args, **self.kwargs)
         super(NodeVisitor, self).visit(node)
+        return rv
 
 
 class NodeTransformer(ast.NodeTransformer, NodeVisitor):
