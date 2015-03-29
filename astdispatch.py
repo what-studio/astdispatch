@@ -19,13 +19,13 @@ __all__ = ['astdispatch']
 class NodeVisitor(ast.NodeVisitor):
     """AST node visitor which wraps a single-dispatch function."""
 
-    def __init__(self, dispatch, *args, **kwargs):
-        self.dispatch = dispatch
+    def __init__(self, dispatcher, *args, **kwargs):
+        self.dispatcher = dispatcher
         self.args = args
         self.kwargs = kwargs
 
     def visit(self, node):
-        rv = self.dispatch(node, *self.args, **self.kwargs)
+        rv = self.dispatcher(node, *self.args, **self.kwargs)
         super(NodeVisitor, self).visit(node)
         return rv
 
@@ -42,18 +42,22 @@ class ASTDispatch(object):
     """
 
     def __init__(self, default, visitor_class=NodeVisitor):
-        self.dispatch = singledispatch(default)
+        self.dispatcher = singledispatch(default)
         self.visitor_class = visitor_class
 
     def __call__(self, node, *args, **kwargs):
-        visitor = self.visitor_class(self.dispatch, *args, **kwargs)
+        visitor = self.visitor_class(self.dispatcher, *args, **kwargs)
         return visitor.visit(node)
 
-    def register(self, node_class):
-        return self.dispatch.register(node_class)
+    def dispatch(self, cls):
+        return self.dispatcher.dispatch(cls)
 
-    def dispatch(self, node_class):
-        return self.dispatch.dispatch(node_class)
+    def register(self, cls, func=None):
+        return self.dispatcher.register(cls, func)
+
+    @property
+    def registry(self):
+        return self.dispatcher.registry
 
 
 def astdispatch(func=None, transform=False):

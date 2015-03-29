@@ -94,3 +94,15 @@ def test_args():
             pass
     '''), names.add)
     assert names == set(['x', 'y', 'a', 'b', 'f', 'C'])
+
+
+def test_singledispatch_like():
+    @astdispatch
+    def foo(node):
+        pass
+    foo.register(ast.If, foo)
+    foo.register(ast.For, foo)
+    foo.dispatch(ast.If) is foo
+    foo.dispatch(ast.For) is foo
+    assert foo.registry[ast.If] is foo
+    assert foo.registry[ast.For] is foo
