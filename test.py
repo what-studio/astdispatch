@@ -28,7 +28,8 @@ def to_transform(src_code, dest_code, func, *args, **kwargs):
 
 def test_transform():
     def mangle_id(id_):
-        return re.sub(r'[+/=]', '', base64.b64encode(id_))[:6].lower()
+        b64_id = base64.b64encode(id_.encode()).decode()
+        return re.sub(r'[+/=]', '', b64_id)[:6].lower()
     @astdispatch(transform=True)
     def mangle(node):
         return node
@@ -40,6 +41,9 @@ def test_transform():
         return ast.FunctionDef(name=mangle_id(func_def.name),
                                args=func_def.args, body=func_def.body,
                                decorator_list=func_def.decorator_list)
+    @mangle.register(ast.arg)
+    def mangle_arg(arg):
+        return ast.arg(arg=mangle_id(arg.arg), annotation=arg.annotation)
     assert to_transform('''
         a = 123
         b = 456
