@@ -41,9 +41,11 @@ def test_transform():
         return ast.FunctionDef(name=mangle_id(func_def.name),
                                args=func_def.args, body=func_def.body,
                                decorator_list=func_def.decorator_list)
-    @mangle.register(ast.arg)
-    def mangle_arg(arg):
-        return ast.arg(arg=mangle_id(arg.arg), annotation=arg.annotation)
+    if hasattr(ast, 'arg'):
+        # for Python 3.
+        @mangle.register(ast.arg)
+        def mangle_arg(arg):
+            return ast.arg(arg=mangle_id(arg.arg), annotation=arg.annotation)
     assert to_transform('''
         a = 123
         b = 456
