@@ -9,7 +9,10 @@
    :license: BSD, see LICENSE for more details.
 """
 import ast
-from singledispatch import singledispatch
+try:
+    from functools import singledispatch
+except ImportError:
+    from singledispatch import singledispatch
 
 
 __version__ = '0.0.1'

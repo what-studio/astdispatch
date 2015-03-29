@@ -19,6 +19,15 @@ def run_tests(self):
 test.run_tests = run_tests
 
 
+try:
+    from functools import singledispatch
+except ImportError:
+    requirements = ['singledispatch']
+else:
+    del singledispatch
+    requirements = []
+
+
 setup(
     name='astdispatch',
     version=version,
@@ -45,7 +54,7 @@ setup(
                  'Programming Language :: Python :: 3.4',
                  'Programming Language :: Python :: Implementation :: CPython',
                  'Programming Language :: Python :: Implementation :: PyPy'],
-    install_requires=['singledispatch'],
+    install_requires=requirements,
     tests_require=['astunparse', 'pytest'],
     test_suite='...',
 )
