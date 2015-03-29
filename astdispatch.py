@@ -12,7 +12,7 @@ import ast
 from singledispatch import singledispatch
 
 
-__version__ = '0.0.1-dev'
+__version__ = '0.0.1'
 __all__ = ['astdispatch']
 
 
@@ -37,6 +37,9 @@ class NodeTransformer(ast.NodeTransformer, NodeVisitor):
 
 
 class ASTDispatch(object):
+    """A callable object like a single-dispatch function but it visits AST
+    nodes by :class:`NodeVisitor` or :class:`NodeTransformer`.
+    """
 
     def __init__(self, default, visitor_class=NodeVisitor):
         self.dispatch = singledispatch(default)
