@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import ast
-import base64
-import re
 from textwrap import dedent
 
 from astunparse import unparse as astunparse
@@ -26,41 +24,16 @@ def to_transform(src_code, dest_code, func, *args, **kwargs):
     return astunparse(node) == astunparse(parse(dest_code))
 
 
-def test_transform():
-    def mangle_id(id_):
-        b64_id = base64.b64encode(id_.encode()).decode()
-        return re.sub(r'[+/=]', '', b64_id)[:6].lower()
-    @astdispatch(transform=True)
-    def mangle(node):
-        return node
-    @mangle.register(ast.Name)
-    def mangle_name(name):
-        return ast.Name(id=mangle_id(name.id), ctx=name.ctx)
-    @mangle.register(ast.FunctionDef)
-    def mangle_func_def(func_def):
-        return ast.FunctionDef(name=mangle_id(func_def.name),
-                               args=func_def.args, body=func_def.body,
-                               decorator_list=func_def.decorator_list)
-    if hasattr(ast, 'arg'):
-        # for Python 3.
-        @mangle.register(ast.arg)
-        def mangle_arg(arg):
-            return ast.arg(arg=mangle_id(arg.arg), annotation=arg.annotation)
-    assert to_transform('''
-        a = 123
-        b = 456
-        c = a + b
-        def pow(x, y):
-            return x ** y
-        d = pow(a, b)
-    ''', '''
-        yq = 123
-        yg = 456
-        yw = (yq + yg)
-        def cg93(ea, eq):
-            return (ea ** eq)
-        za = cg93(yq, yg)
-    ''', mangle)
+def test_singledispatch_like():
+    @astdispatch
+    def foo(node):
+        pass
+    foo.register(ast.If, foo)
+    foo.register(ast.For, foo)
+    foo.dispatch(ast.If) is foo
+    foo.dispatch(ast.For) is foo
+    assert foo.registry[ast.If] is foo
+    assert foo.registry[ast.For] is foo
 
 
 def test_args():
@@ -96,13 +69,22 @@ def test_args():
     assert names == set(['x', 'y', 'a', 'b', 'f', 'C'])
 
 
-def test_singledispatch_like():
-    @astdispatch
-    def foo(node):
-        pass
-    foo.register(ast.If, foo)
-    foo.register(ast.For, foo)
-    foo.dispatch(ast.If) is foo
-    foo.dispatch(ast.For) is foo
-    assert foo.registry[ast.If] is foo
-    assert foo.registry[ast.For] is foo
+def test_transform():
+    @astdispatch(transform=True)
+    def rewrite_name(node):
+        return node
+    @rewrite_name.register(ast.Name)
+    def _(node):
+        return ast.copy_location(ast.Subscript(
+            value=ast.Name(id='data', ctx=ast.Load()),
+            slice=ast.Index(value=ast.Str(s=node.id)),
+            ctx=node.ctx), node)
+    assert to_transform('''
+        a = 123
+        b = 456
+        c = a + b
+    ''', '''
+        data['a'] = 123
+        data['b'] = 456
+        data['c'] = data['a'] + data['b']
+    ''', rewrite_name)
