@@ -24,3 +24,11 @@ def _(node):
         slice=ast.Index(value=ast.Str(s=node.id)),
         ctx=node.ctx), node)
 ```
+
+Written by [Heungsub Lee] at [What! Studio] in [Nexon], and
+distributed under the [BSD 3-Clause] license.
+
+[Heungsub Lee]: http://subl.ee/
+[What! Studio]: https://github.com/what-studio
+[Nexon]: http://nexon.com/
+[BSD 3-Clause]: http://opensource.org/licenses/BSD-3-Clause
