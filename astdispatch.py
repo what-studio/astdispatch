@@ -5,7 +5,7 @@
 
    :mod:`singledispatch`-like API to visit all Python AST nodes.
 
-   :copyright: (c) 2015 by What! Studio
+   :copyright: (c) 2015-2016 by What! Studio
    :license: BSD, see LICENSE for more details.
 """
 import ast
